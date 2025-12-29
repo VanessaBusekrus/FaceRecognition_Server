@@ -214,10 +214,10 @@ public class AuthController implements IAuthController {
      * @param name the search term from HTTP request (VULNERABLE)
      * @return list of users (or all users if exploited)
      */
-    @GetMapping("/api/search")
-    public ResponseEntity<?> searchUsersVulnerable(@RequestParam String name) {
-        // VULNERABLE: User input flows directly from HTTP request to SQL query
-        List<User> users = userServiceImpl.searchByNameVulnerable(name);
-        return ResponseEntity.ok(users);
-    }
+    // @GetMapping("/api/search")
+    // public ResponseEntity<?> searchUsers(@RequestParam String name) {
+    //     // VULNERABLE: User input flows directly from HTTP request to SQL query
+    //     List<User> users = userServiceImpl.searchByName(name);
+    //     return ResponseEntity.ok(users);
+    // }
 }

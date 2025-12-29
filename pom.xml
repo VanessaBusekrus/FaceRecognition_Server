@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.5</version>
         <relativePath/> <!-- Finds parent automatically from Maven repository -->
     </parent>
 
@@ -41,7 +41,6 @@
     <!-- Java and Spring Boot versions used -->
     <properties>
         <java.version>21</java.version> <!-- Compiles the project with Java 21 -->
-        <spring.boot.version>3.5.0</spring.boot.version>
     </properties>
     <!-- ============================
          Dependencies
@@ -80,6 +79,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.7</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -157,7 +157,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
             </plugin>
 
             <!-- Maven compiler plugin: sets the Java version -->
@@ -209,7 +208,7 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.6.0</version>
+                        <version>42.7.7</version>
                     </dependency>
                 </dependencies>
             </plugin>
