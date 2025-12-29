@@ -1,0 +1,48 @@
+name: Backend SCA Scan
+
+# Trigger on pushes and PRs to vulnerabilities branch
+on:
+  push:
+    branches: ["vulnerabilities"]
+#   pull_request:
+
+jobs:
+  snyk-scan:
+    name: Snyk Dependency Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1 Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2 Set up Java (Temurin 21, to be adjusted based on Java version used in the project)
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # 3 Cache Maven dependencies (optional, speeds up workflow)
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # 4 Run Snyk scan
+      - name: Run Snyk scan
+        uses: snyk/actions/maven@v1
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API }}
+
+      # 5 (Optional) Upload Snyk report as artifact
+      - name: Upload Snyk report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-report
+          path: snyk_report.json
