@@ -1,0 +1,7 @@
+PUT http://localhost:8080/updateprofile HTTP/1.1
+content-type: application/json
+
+{
+  "id": 3,
+  "name": "Ben"
+}

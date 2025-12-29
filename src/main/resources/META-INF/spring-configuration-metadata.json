@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "clarifai.api.pat",
+      "type": "java.lang.String",
+      "description": "Clarifai Personal Access Token (PAT). Provide this as an environment variable in production."
+    },
+    {
+      "name": "clarifai.api.user-id",
+      "type": "java.lang.String",
+      "description": "Clarifai account user id used by the gRPC client."
+    },
+    {
+      "name": "clarifai.api.app-id",
+      "type": "java.lang.String",
+      "description": "Clarifai application id used by the gRPC client."
+    }
+  ]
+}

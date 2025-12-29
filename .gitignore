@@ -1,0 +1,34 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# MacOS
+.DS_Store
+
+# H2 Database files
+/data/*.mv.db
+
+# Spring Boot specific
+.yml
+
+# SQL files
+/*.sql
+
+# IDE specific files
+.vscode/
+
+# Temporary files
+target/
+temp/
+
+# Secret files
+*.env
+clarifai-secret.yaml
+db-secret.yaml
+
+# Logs
+*.log
+

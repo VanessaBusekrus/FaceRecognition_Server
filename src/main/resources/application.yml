@@ -1,0 +1,32 @@
+############################################################
+# Application configuration (AWS RDS PostgreSQL)
+############################################################
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${RDS_HOST}:${RDS_PORT}/${RDS_DB}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true
+    properties:
+      hibernate.default_schema: public  # Ensures the app uses public schema
+
+  sql:
+    init:
+      mode: never   # Disable H2 schema.sql
+
+
+############################################################
+# Clarifai: client configuration for image analysis (gRPC)
+############################################################
+clarifai:
+  api:
+    pat: ${CLARIFAI_API_PAT}
+    user-id: ${CLARIFAI_USER_ID}
+    app-id: ${CLARIFAI_APP_ID}

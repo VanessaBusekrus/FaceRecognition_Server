@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: facerecognition-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: facerecognition-backend
+  template:
+    metadata:
+      labels:
+        app: facerecognition-backend
+    spec:
+      containers:
+        - name: facerecognition-backend
+          image: vanessabkrs/facerecognition-server:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: db-config
+          env:
+            - name: RDS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: RDS_PASSWORD
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_FLYWAY_ENABLED
+              value: "false"
+            - name: CLARIFAI_API_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: clarifai-secret
+                  key: CLARIFAI_API_PAT
+            - name: CLARIFAI_USER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: clarifai-secret
+                  key: CLARIFAI_USER_ID
+            - name: CLARIFAI_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: clarifai-secret
+                  key: CLARIFAI_APP_ID
+
