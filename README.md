@@ -213,15 +213,4 @@ Tests use JUnit 5 and Mockito. Unit tests mock repositories and external integra
 - `db-secret.yaml` — example Kubernetes secret (do not commit secrets in plaintext)
 - `pom.xml`, `mvnw` — Maven build
 
----
-
-If you want, I can:
-- generate a single shell script that builds, pushes to ECR and deploys the app to EKS, or
-- apply the `k8s/` manifests to your current cluster (I will verify `kubectl config current-context` first).
-
-Pick one and I will prepare the exact commands or run them for you.
-
-# Hands-On Spring Application
-
-This is a Spring Boot application that provides user registration, sign-in (with optional 2FA), image entry tracking, and face detection using the Clarifai gRPC API.
 
