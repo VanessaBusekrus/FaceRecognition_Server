@@ -1,3 +1,4 @@
+# this scan does not run properly because the API token is missing, which apparently cannot be get in the Snyk free plan
 name: Backend SCA Scan
 
 on:
