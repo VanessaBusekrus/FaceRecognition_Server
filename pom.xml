@@ -54,18 +54,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.5.6</version>
         </dependency>
 
         <!-- Adds Spring Data JPA: easy database access using repositories -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>3.5.6</version>
         </dependency>
 
         <!-- Adds Spring Security: for login, password encoding, etc. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+            <version>3.5.6</version>
         </dependency>
 
         <!-- Adds an in-memory H2 database for testing and development
