@@ -1,148 +1,183 @@
 <!--
   POM = Project Object Model
-  This file defines how your Spring Boot project is built:
-  - what dependencies it uses,
-  - how it’s compiled,
-  - and how to package it (into a JAR).
+  Defines dependencies, build, and packaging for the Spring Boot app
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <!-- Basic Maven project version -->
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 
-      Parent: Spring Boot Starter Parent
-      Provides default configurations for plugins, dependency versions, etc.
-    -->
+    <!-- Spring Boot parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
-        <relativePath/> <!-- Finds parent automatically from Maven repository -->
+        <version>3.5.9</version>
+        <relativePath/>
     </parent>
 
-    <!--
-      Project coordinates (like a unique ID for your app)
-      groupId = your organization or package base
-      artifactId = project name
-      version = current build version
-    -->
+    <!-- Project coordinates -->
     <groupId>nl.cyberella</groupId>
     <artifactId>hands_on</artifactId>
     <version>0.0.1</version>
-    <packaging>jar</packaging> <!-- Defines that Maven builds a JAR file -->
+    <packaging>jar</packaging>
 
-    <!-- Project name and short description -->
     <name>hands_on</name>
     <description>Hands on Spring application</description>
 
-    <!-- Java and Spring Boot versions used -->
+    <!-- Java version -->
     <properties>
-        <java.version>21</java.version> <!-- Compiles the project with Java 21 -->
-        <spring.boot.version>3.5.0</spring.boot.version>
+        <java.version>21</java.version>
     </properties>
+
+    <!-- ============================
+         Dependency Management
+         Security overrides for transitive deps
+         ============================ -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- HTTP Client (policy pin) -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.14</version>
+            </dependency>
+
+            <!-- Protobuf -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>3.25.5</version>
+            </dependency>
+
+            <!-- OkHttp -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>4.9.3</version>
+            </dependency>
+
+            <!-- Guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>32.0.1-jre</version>
+            </dependency>
+
+            <!-- Kotlin stdlib -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
     <!-- ============================
          Dependencies
-         ============================
-         Each dependency adds a library your project needs.
-         Spring Boot will automatically configure them for you.
-    -->
+         ============================ -->
     <dependencies>
 
-        <!-- Adds Spring Web: enables building REST APIs -->
+        <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Adds Spring Data JPA: easy database access using repositories -->
+        <!-- Spring Data JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Adds Spring Security: for login, password encoding, etc. -->
+        <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Adds an in-memory H2 database for testing and development
+        <!-- H2 Database for local development -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
-        </dependency> -->
+        </dependency>
 
-        <!-- To work with PostgreSQL database on RDS on AWS -->
+        <!-- PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Dependencies for testing your code -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Validation (Jakarta Bean Validation) -->
+        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Extra test tools for Spring Security -->
+        <!-- Flyway -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- Lombok: automatically generates getters/setters/constructors -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Google Auth library for two-factor authentication (2FA) -->
+        <!-- Google Authenticator (2FA) -->
         <dependency>
             <groupId>com.warrenstrange</groupId>
             <artifactId>googleauth</artifactId>
             <version>1.4.0</version>
         </dependency>
 
-        <!-- Clarifai gRPC client: used for image/face recognition -->
+        <!-- Clarifai gRPC client -->
         <dependency>
             <groupId>com.clarifai</groupId>
             <artifactId>clarifai-grpc</artifactId>
             <version>10.5.2</version>
         </dependency>
 
-        <!-- gRPC runtime (used by Clarifai SDK) -->
+        <!-- gRPC runtime -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
             <version>1.76.0</version>
         </dependency>
 
-        <!-- Flyway for database migrations in production -->
+        <!-- Tests -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <!-- ============================
-         Build Configuration
+         Build
          ============================ -->
     <build>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -151,20 +186,19 @@
                 </includes>
             </resource>
         </resources>
+
         <plugins>
 
-            <!-- Spring Boot plugin: creates runnable JAR file -->
+            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
             </plugin>
 
-            <!-- Maven compiler plugin: sets the Java version -->
+            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
                 <configuration>
                     <release>${java.version}</release>
                     <annotationProcessorPaths>
@@ -177,11 +211,10 @@
                 </configuration>
             </plugin>
 
-            <!-- Enforcer plugin: ensures Java 21+ is used to build the project -->
+            <!-- Enforce Java 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>enforce-java</id>
@@ -200,20 +233,20 @@
                 </executions>
             </plugin>
 
-            <!-- Flyway Maven plugin: include PostgreSQL JDBC driver on the plugin classpath -->
+            <!-- Flyway Maven plugin -->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>11.7.2</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.6.0</version>
+                        <version>42.7.7</version>
                     </dependency>
                 </dependencies>
             </plugin>
 
         </plugins>
     </build>
+
 </project>
