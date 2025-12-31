@@ -71,20 +71,13 @@
             <version>3.5.6</version>
         </dependency>
 
-        <!-- Adds an in-memory H2 database for testing and development
+        <!-- Adds an in-memory/file H2 database for local dev/profile `local` -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
-        </dependency> -->
-
-        <!-- To work with PostgreSQL database on RDS on AWS -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
-            <scope>runtime</scope>
         </dependency>
+
 
         <!-- Dependencies for testing your code -->
         <dependency>
@@ -135,11 +128,6 @@
             <version>1.76.0</version>
         </dependency>
 
-        <!-- Flyway for database migrations in production -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
     </dependencies>
 
     <!-- ============================
@@ -200,20 +188,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Flyway Maven plugin: include PostgreSQL JDBC driver on the plugin classpath -->
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>11.7.2</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>42.7.7</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
         </plugins>

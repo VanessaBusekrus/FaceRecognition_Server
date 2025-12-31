@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: db-config
-data:
-  RDS_HOST: "db-face-recognition.cpm0qiasuwb7.eu-central-1.rds.amazonaws.com"
-  RDS_PORT: "5432"
-  RDS_DB: "facerecognition"
-  RDS_USERNAME: "Vanessa"
