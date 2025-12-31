@@ -32,3 +32,6 @@ db-secret.yaml
 # Logs
 *.log
 
+# Secret files
+*.properties
+

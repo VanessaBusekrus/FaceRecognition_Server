@@ -34,7 +34,7 @@ public class CorsConfig {
                 // Allow the Vite development server origin to call this API.
                 // In production, change this to your deployed frontend origin(s).
                 registry.addMapping("/**")
-                        .allowedOrigins("http://a8c1f5971b2fb4724ac640d1bc44f0b8-1212569652.eu-central-1.elb.amazonaws.com") // the Vite frontend
+                        .allowedOrigins("http://localhost:5173") // the Vite frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         // If your frontend sends credentials (cookies or Authorization
