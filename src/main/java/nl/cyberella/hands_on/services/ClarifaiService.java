@@ -6,6 +6,7 @@ import com.clarifai.grpc.api.*;
 import com.clarifai.grpc.api.status.StatusCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import nl.cyberella.hands_on.services.interfaces.IClarifaiService;
@@ -25,14 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClarifaiService implements IClarifaiService {
 
-    // @Value("${clarifai.api.pat:}")
-    // private String PAT;
+    @Value("${clarifai.api.pat:}")
+    private String PAT;
     @Value("${clarifai.api.user-id:}")
     private String USER_ID;
     @Value("${clarifai.api.app-id:}")
     private String APP_ID;
 
-    private static final String CLARIFAI_API_PAT = "somehardcodedpat"; // to trigger SAST
     private static final String MODEL_ID = "face-detection";
     private static final String MODEL_VERSION_ID = "6dc7e46bc9124c5c8824be4822abe105";
 
@@ -46,15 +46,15 @@ public class ClarifaiService implements IClarifaiService {
     @PostConstruct
     public void init() {
         try {
-            // if (PAT == null || PAT.isBlank()) {
-            //     log.warn("Clarifai PAT not configured; Clarifai client will be disabled");
-            //     return;
-            // }
+            if (!StringUtils.hasText(PAT)) {
+                log.warn("Clarifai PAT not configured; Clarifai client will be disabled");
+                return;
+            }
             // Creates a gRPC channel and stub with authentication
             this.channel = ClarifaiChannel.INSTANCE.getGrpcChannel();
             this.stub = V2Grpc.newBlockingStub(this.channel)
             // ClarifaiCallCredentials → attaches the PAT to every gRPC call.
-                    .withCallCredentials(new ClarifaiCallCredentials(CLARIFAI_API_PAT));
+                    .withCallCredentials(new ClarifaiCallCredentials(PAT));
             log.info("Clarifai gRPC client initialized");
         } catch (Exception ex) {
             log.error("Failed to initialize Clarifai client", ex);
