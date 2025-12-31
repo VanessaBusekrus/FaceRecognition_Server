@@ -35,9 +35,10 @@
         </encoder>
     </appender>
 
-    <!-- Logger for audit events. Only write to audit file, no additivity -->
+    <!-- Logger for audit events. Write to audit file and console -->
     <logger name="nl.cyberella.audit" level="INFO" additivity="false">
         <appender-ref ref="AUDIT_FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <!-- Root Logger: write INFO+ to console and application file -->

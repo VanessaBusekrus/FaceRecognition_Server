@@ -1,6 +1,6 @@
 # FaceRecognition Backend
 
-A Spring Boot backend providing user registration, sign-in (optional 2FA), image entry tracking and face detection (Clarifai). This README documents how to build, run and deploy the service locally and to AWS EKS, and how to run database migrations safely with Flyway.
+A Spring Boot backend providing user registration, sign-in (optional 2FA), image entry tracking and face detection (Clarifai). This README documents how to build, run and test the service locally.
 
 ---
 
@@ -8,11 +8,8 @@ A Spring Boot backend providing user registration, sign-in (optional 2FA), image
 
 - Overview
 - Requirements
-- Quick start (development)
-- Database & migrations
-- Docker / ECR (push image)
-- Deploy to Kubernetes (EKS)
-- Running Flyway migrations (in-cluster recommended)
+- Quick start
+- Database
 - Configuration and secrets
 - Testing
 - Troubleshooting
@@ -24,163 +21,90 @@ A Spring Boot backend providing user registration, sign-in (optional 2FA), image
 
 - Java 21, Spring Boot 3.x
 - JPA / Hibernate for data access
-- Flyway for schema migrations (migrations live in `src/main/resources/db/migration`)
+- H2 file-based database for local development
 - Clarifai gRPC client for face detection
-- H2 used for local development; PostgreSQL (AWS RDS) targeted in production
-
-Important production behavior:
-- `spring.jpa.hibernate.ddl-auto` is disabled for `prod`. Schema management must be performed with Flyway.
+- Spring Security with CORS enabled for frontend integration
 
 ---
 
 ## Requirements
 
 - Java 21
-- Docker (for building/testing images)
 - Maven (or use `./mvnw` wrapper)
-- kubectl + kubeconfig for target cluster (EKS)
-- AWS CLI configured (for ECR/EKS operations)
 
 ---
 
-## Quick start (development)
+## Quick start
 
-Run locally with the embedded H2 database:
+Run locally with the file-based H2 database using the `local` profile:
 
 ```bash
-# use the Maven wrapper from repo root
-./mvnw spring-boot:run
+# Set Clarifai credentials (if using face detection features)
+export CLARIFAI_API_PAT=your_pat_here
+export CLARIFAI_USER_ID=your_user_id_here
+export CLARIFAI_APP_ID=your_app_id_here
+
+# Start the application with local profile
+SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
 ```
+
+The application will start on `http://localhost:8080`.
 
 Build a runnable JAR:
 
 ```bash
 ./mvnw clean package
-java -jar target/hands_on-0.0.1-SNAPSHOT.jar
-```
-
-The app exposes REST endpoints (see `src/main/java/.../controllers` for full details). There is a `HealthController` available for basic health checks.
-
----
-
-## Database & migrations
-
-Migrations are located in `src/main/resources/db/migration` and follow Flyway naming (V1__, V2__, ...). In production you must run these migrations against your PostgreSQL RDS before (or as part of) deployment.
-
-Local dev: the project contains H2 SQL scripts in `src/main/resources/h2/` used for local startup when running with the default profile.
-
-Important:
-- Production profile uses PostgreSQL and `spring.jpa.hibernate.ddl-auto: none`. Hibernate will not create tables in prod.
-- If you already manually created objects in the DB, tell Flyway to baseline so Flyway records the current state instead of re-applying migrations (`baseline-on-migrate=true` or `flyway baseline`).
-
----
-
-## Docker & ECR (push image)
-
-Create an ECR repo (example uses profile `vanessa.admin` and `eu-central-1`):
-
-```bash
-export AWS_REGION=eu-central-1
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --profile vanessa.admin --query Account --output text)
-ECR_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/facerecognition-backend
-
-# create repo if it does not exist
-aws ecr create-repository --repository-name facerecognition-backend --region ${AWS_REGION} --profile vanessa.admin || true
-```
-
-Build and push:
-
-```bash
-./mvnw -DskipTests package
-docker build -t facerecognition-backend:latest .
-docker tag facerecognition-backend:latest ${ECR_URI}:latest
-aws ecr get-login-password --region ${AWS_REGION} --profile vanessa.admin \
-  | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-
-docker push ${ECR_URI}:latest
+java -jar target/hands_on-0.0.1.jar
 ```
 
 ---
 
-## Deploy to Kubernetes (EKS)
+## Database
 
-Prerequisites:
-- `kubectl` configured for your EKS cluster
-- ECR image pushed
-- `db-secret` created in the cluster with DB credentials
-- EKS nodes/pods can reach your RDS on port 5432 (RDS security group must allow the node/pod SG or VPC CIDR)
+The local profile uses H2 file-based database:
+- Database file location: `./data/facerecognition.mv.db`
+- Schema initialization: `src/main/resources/h2/schema.sql` (executed on startup)
+- H2 Console: accessible at `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:file:./data/facerecognition`)
+- Hibernate DDL: `update` mode (automatically creates/updates tables)
 
-Example steps (in order):
-
-1) Apply DB secret (you can create `db-secret.yaml` or create from literals):
-
-```bash
-kubectl apply -f db-secret.yaml
-# OR create from literals (careful with quoting passwords)
-kubectl create secret generic db-secret \
-  --from-literal=RDS_USERNAME='Vanessa' \
-  --from-literal=RDS_PASSWORD='your_password' \
-  --from-literal=RDS_HOST='db-face-recognition....rds.amazonaws.com' \
-  --from-literal=RDS_DB='facerecognition' \
-  --from-literal=RDS_PORT='5432'
-```
-
-2) Run Flyway migrations (recommended in-cluster):
-
-```bash
-kubectl apply -f k8s/flyway-configmap.yaml
-kubectl apply -f k8s/flyway-job.yaml
-kubectl logs -l job-name=flyway-migrate -f --tail=200
-```
-
-Wait for the Job to complete and verify `flyway_schema_history` in the DB.
-
-3) Deploy or update the backend deployment to use the new image:
-
-```bash
-# example: update image on existing deployment
-kubectl set image deployment/facerecognition-backend \
-  facerecognition-backend=${ECR_URI}:latest
-kubectl rollout status deployment/facerecognition-backend
-kubectl logs -f deployment/facerecognition-backend
-```
-
-If you don't have a deployment manifest yet, create one in `k8s/backend-deployment.yaml` and `k8s/backend-service.yaml` and `kubectl apply -f k8s/`.
+The database persists data between application restarts. To reset, delete the `./data/` directory.
 
 ---
 
-## Running Flyway locally (optional)
+## Configuration and secrets
 
-If your workstation has network access to the RDS (and the RDS SG allows your IP), you can run Flyway locally using Docker:
+Local configuration is in `src/main/resources/application-local.yml` and imports `secret-clarifai.properties` for Clarifai credentials.
 
-```bash
-export RDS_HOST="db-face-recognition.cpm0qiasuwb7.eu-central-1.rds.amazonaws.com"
-export RDS_DB="facerecognition"
-export RDS_USERNAME="Vanessa"
-export RDS_PASSWORD="<your_password>"
+### Clarifai Setup
 
-docker run --rm -v "$(pwd)/src/main/resources/db/migration":/flyway/sql \
-  -e FLYWAY_URL="jdbc:postgresql://${RDS_HOST}:5432/${RDS_DB}?sslmode=require" \
-  -e FLYWAY_USER="${RDS_USERNAME}" \
-  -e FLYWAY_PASSWORD="${RDS_PASSWORD}" \
-  flyway/flyway:latest -baselineOnMigrate=true migrate
+Create or update `secret-clarifai.properties` in the project root:
+
+```properties
+clarifai.api.pat=YOUR_ACTUAL_PAT
+clarifai.api.user-id=YOUR_USER_ID
+clarifai.api.app-id=YOUR_APP_ID
 ```
 
-Note: use `-baselineOnMigrate=true` if the DB already contains objects you created manually.
+**Important:** Keep `secret-clarifai.properties` gitignored and never commit real credentials.
 
----
+Alternatively, export environment variables before starting:
 
-## Configuration & Secrets
+```bash
+export CLARIFAI_API_PAT=your_pat
+export CLARIFAI_USER_ID=your_user_id
+export CLARIFAI_APP_ID=your_app_id
+```
 
-- Development config: `src/main/resources/application.yml` and H2 scripts under `src/main/resources/h2/`.
-- Production config: `src/main/resources/application-prod.yml`. This file expects DB configuration from environment variables (or Kubernetes `Secret`).
+If Clarifai credentials are not configured, the client will be disabled and face detection endpoints will return an error.
 
-Required env vars for production:
+### CORS Configuration
 
-- `RDS_HOST`, `RDS_PORT`, `RDS_DB`, `RDS_USERNAME`, `RDS_PASSWORD`
-- Clarifai: `CLARIFAI_API_PAT`, `CLARIFAI_API_USER_ID`, `CLARIFAI_API_APP_ID` (only if using Clarifai features)
+CORS is configured in `src/main/java/nl/cyberella/hands_on/config/CorsConfig.java` to allow:
+- Origin: `http://localhost:5173` (Vite dev server)
+- Methods: GET, POST, PUT, DELETE, OPTIONS
+- Credentials: enabled
 
-Security note: avoid checking secrets into the repo. Prefer AWS Secrets Manager + ExternalSecrets or Kubernetes Secrets with restricted RBAC.
+Add additional origins if needed for your frontend.
 
 ---
 
@@ -192,25 +116,61 @@ Run unit tests with Maven:
 ./mvnw test
 ```
 
-Tests use JUnit 5 and Mockito. Unit tests mock repositories and external integrations so they run without network or DB.
+Tests use JUnit 5 and Mockito. Unit tests mock repositories and external integrations so they run without network or database dependencies.
 
 ---
 
 ## Troubleshooting
 
-- "Connect timed out" to RDS: update RDS Security Group to allow traffic from EKS node security group (preferred) or from your IP when running locally.
-- Flyway plugin dependency failures when running via Maven: newer Flyway versions separate DB-specific plugins; running Flyway in-cluster (Docker image) avoids Maven plugin resolution issues.
-- Hibernate trying to create `testdb.*` tables: ensure your entity mappings and `application-prod.yml` point to the `public` schema and `ddl-auto` is `none` in production.
+### Clarifai client not initialized
+
+If you see "Clarifai client not initialized or PAT not configured":
+1. Verify you're running with the `local` profile: `SPRING_PROFILES_ACTIVE=local`
+2. Check that `secret-clarifai.properties` exists and contains valid credentials, or export environment variables
+3. Restart the application and look for "Clarifai gRPC client initialized" in the logs
+
+### CORS errors from frontend
+
+If your frontend can't connect:
+1. Verify the backend is running on `http://localhost:8080`
+2. Check that your frontend origin is listed in `CorsConfig.java`
+3. Ensure you're using the correct HTTP methods (POST for /register, /signin, etc.)
+
+### Database schema issues
+
+If tables aren't created:
+1. Check that `src/main/resources/h2/schema.sql` exists and is valid
+2. Verify the `local` profile is active (look for "No active profile" in startup logs)
+3. Delete `./data/` directory and restart to recreate the database
+
+### Port already in use
+
+If port 8080 is busy, set a different port:
+```bash
+SERVER_PORT=8000 SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
+```
 
 ---
 
-## Project structure (high level)
+## Project structure
 
-- `src/main/java/...` — application code (controllers, services, models, repos)
-- `src/main/resources/db/migration` — Flyway SQL migrations
-- `src/main/resources/h2` — H2 schema & data used in local dev
-- `k8s/` — Kubernetes manifests (ConfigMaps, Jobs, deployments)
-- `db-secret.yaml` — example Kubernetes secret (do not commit secrets in plaintext)
-- `pom.xml`, `mvnw` — Maven build
+- `src/main/java/nl/cyberella/hands_on/` — application code
+  - `controllers/` — REST endpoints
+  - `services/` — business logic
+  - `models/` — JPA entities
+  - `repositories/` — data access
+  - `config/` — Spring configuration (CORS, Security, etc.)
+  - `dto/` — data transfer objects
+  - `audit/` — audit logging
+  - `utils/` — utility classes
+- `src/main/resources/` — configuration and resources
+  - `application-local.yml` — local profile configuration
+  - `h2/schema.sql` — H2 database schema
+  - `logback.xml` — logging configuration
+- `src/test/` — unit tests
+- `pom.xml` — Maven dependencies and build configuration
+- `mvnw`, `mvnw.cmd` — Maven wrapper scripts
+- `secret-clarifai.properties` — Clarifai credentials (gitignored)
+- `data/` — H2 database files (gitignored)
 
 
