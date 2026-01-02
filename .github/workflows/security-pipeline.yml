@@ -54,14 +54,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Semgrep Java SAST scan
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: |
-            p/java
-            p/java-security
-          format: sarif
-          output: semgrep.sarif
+      - name: Run Semgrep in container
+        run: |
+          docker run --rm -v "$PWD:/src" returntocorp/semgrep:latest \
+            semgrep scan --config p/java --config p/java-security --sarif --output /src/semgrep.sarif /src
 
       - name: Print Semgrep output
         run: cat semgrep.sarif || echo "No Semgrep issues found"
