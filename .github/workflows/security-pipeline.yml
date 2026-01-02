@@ -1,7 +1,7 @@
 name: Backend Security Pipeline
 
 on:
-  workflow_dispatch:  # allows manual "press of a button" execution
+  workflow_dispatch:  # manual button trigger
   push:
     branches: ["vulnerabilities"]
 
@@ -11,7 +11,7 @@ permissions:
   actions: read
 
 jobs:
-  ### ------------------- SAST ------------------- ###
+  ### ------------------- SAST: CodeQL ------------------- ###
   codeql-sast:
     name: SAST - CodeQL
     runs-on: ubuntu-latest
@@ -24,32 +24,44 @@ jobs:
           - language: java-kotlin
             build-mode: none
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           queries: security-extended,security-and-quality
+
       - name: Run manual build steps if needed
         if: matrix.build-mode == 'manual'
         run: |
-          echo "Add your manual build commands here"
+          echo "Add manual build commands here"
           exit 1
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{matrix.language}}"
 
+  ### ------------------- SAST: Semgrep ------------------- ###
   semgrep-sast:
     name: SAST - Semgrep
     runs-on: ubuntu-latest
     needs: codeql-sast
     steps:
-      - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep scan
+        uses: returntocorp/semgrep-action@v1
         with:
           config: auto
+
+      - name: Print Semgrep output
+        run: cat semgrep.sarif || echo "No Semgrep issues found"
+
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -57,11 +69,13 @@ jobs:
 
   ### ------------------- SCA ------------------- ###
   sca-scan:
-    name: SCA - OSV / Snyk
+    name: SCA - OSV Scanner
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run OSV Scanner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run OSV scan
         uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.7.1"
         with:
           scan-args: |
@@ -69,15 +83,21 @@ jobs:
             --skip-git
             ./
 
+      - name: Print OSV results
+        run: cat osv-scan-results.json || echo "No OSV issues found"
+
   ### ------------------- Container Security ------------------- ###
   container-scan:
     name: Container Security - Trivy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Build Docker image
         run: docker build -t my-backend:${{ github.sha }} .
-      - name: Scan Docker image with Trivy
+
+      - name: Run Trivy scan
         uses: aquasecurity/trivy-action@v0
         with:
           image-ref: my-backend:${{ github.sha }}
@@ -85,6 +105,10 @@ jobs:
           template: '@/contrib/sarif.tpl'
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
+
+      - name: Print Trivy results
+        run: trivy image --severity CRITICAL,HIGH my-backend:${{ github.sha }} || echo "No Trivy issues found"
+
       - name: Upload Trivy SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
