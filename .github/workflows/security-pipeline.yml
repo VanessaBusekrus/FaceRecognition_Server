@@ -70,21 +70,12 @@ jobs:
   ### ------------------- SCA ------------------- ###
   sca-scan:
     name: SCA - OSV Scanner
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run OSV scan
-        uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.7.1"
-        with:
-          scan-args: |
-            -r
-            --skip-git
-            ./
-
-      - name: Print OSV results
-        run: cat osv-scan-results.json || echo "No OSV issues found"
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.7.1
+    with:
+      scan-args: |
+        -r
+        --skip-git
+        ./
 
   ### ------------------- Container Security ------------------- ###
   container-scan:
