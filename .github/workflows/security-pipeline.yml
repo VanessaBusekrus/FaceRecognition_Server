@@ -89,7 +89,7 @@ jobs:
         run: docker build -t my-backend:${{ github.sha }} .
 
       - name: Run Trivy scan
-        uses: aquasecurity/trivy-action@v0
+        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
           image-ref: my-backend:${{ github.sha }}
           format: template
