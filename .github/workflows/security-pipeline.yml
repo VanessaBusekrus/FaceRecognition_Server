@@ -80,6 +80,7 @@ jobs:
       scan-args: |
         -r
         --skip-git
+        --ignore-versions 0
         ./
 
   ### ------------------- Container Security ------------------- ###
