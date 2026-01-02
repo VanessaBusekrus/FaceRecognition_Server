@@ -92,6 +92,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build backend JAR
+        run: mvn clean package -DskipTests
+
       - name: Build Docker image
         run: docker build -t my-backend:${{ github.sha }} .
 
@@ -103,6 +106,7 @@ jobs:
           template: '@/contrib/sarif.tpl'
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
+          ignore-unfixed: false
 
       - name: Print Trivy results
         run: trivy image --severity CRITICAL,HIGH my-backend:${{ github.sha }} || echo "No Trivy issues found"
