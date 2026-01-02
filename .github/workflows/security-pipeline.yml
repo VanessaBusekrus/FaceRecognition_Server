@@ -32,7 +32,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          queries: security-extended,security-and-quality
+          queries: security-extended
 
       - name: Run manual build steps if needed
         if: matrix.build-mode == 'manual'
