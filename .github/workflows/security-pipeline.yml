@@ -57,7 +57,9 @@ jobs:
       - name: Run Semgrep scan
         uses: returntocorp/semgrep-action@v1
         with:
-          config: auto
+          config: |
+            p/java
+            p/java-security
 
       - name: Print Semgrep output
         run: cat semgrep.sarif || echo "No Semgrep issues found"
