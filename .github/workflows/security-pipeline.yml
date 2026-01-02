@@ -62,7 +62,6 @@ jobs:
             --config p/java \
             --sarif \
             --output semgrep.sarif \
-            --exit-zero
 
       - name: Print Semgrep output
         run: cat semgrep.sarif || echo "No Semgrep issues found"
