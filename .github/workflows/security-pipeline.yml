@@ -71,6 +71,7 @@ jobs:
 
   ### ------------------- SCA ------------------- ###
   sca-scan:
+    needs: [codeql-sast, semgrep-sast]
     name: SCA - OSV Scanner
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.7.1
     with:
@@ -81,6 +82,7 @@ jobs:
 
   ### ------------------- Container Security ------------------- ###
   container-scan:
+    needs: [codeql-sast, semgrep-sast, sca-scan]
     name: Container Security - Trivy
     runs-on: ubuntu-latest
     steps:
