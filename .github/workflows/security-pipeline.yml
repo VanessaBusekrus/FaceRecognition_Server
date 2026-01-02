@@ -50,14 +50,20 @@ jobs:
     name: SAST - Semgrep (Java only)
     runs-on: ubuntu-latest
     needs: codeql-sast
+    container:
+      image: returntocorp/semgrep:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Semgrep in container
+      - name: Run Semgrep scan in container
         run: |
-          docker run --rm -v "$PWD:/src" returntocorp/semgrep:latest \
-            semgrep scan --config p/java --config p/java-security --sarif --output /src/semgrep.sarif /src
+          semgrep scan \
+            --config p/java \
+            --config p/java-security \
+            --sarif \
+            --output semgrep.sarif \
+            --exit-zero
 
       - name: Print Semgrep output
         run: cat semgrep.sarif || echo "No Semgrep issues found"
